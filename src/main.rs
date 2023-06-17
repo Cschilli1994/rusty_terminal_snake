@@ -1,4 +1,5 @@
 use std::io::Write;
+use std::panic;
 use std::{thread, io::stdout};
 use std::time::Duration;
 use crossterm::event::{
@@ -108,6 +109,16 @@ impl Food {
 }
 
 impl Game {
+    fn clean_up() {
+        terminal::disable_raw_mode().expect("Failed to disable raw mode.");
+        show_cursor();
+        execute!(
+            stdout(),
+            cursor::MoveTo(1, 0),
+            terminal::Clear(terminal::ClearType::All)
+        ).expect("Failed cleaing terminal");
+        println!("Game Over!");
+    }
     fn new_food(&mut self) {
         self.food = new_food(10, 10);
     }
@@ -152,6 +163,9 @@ impl Game {
 }
 
 fn new_game() -> Game {
+    panic::set_hook(Box::new(|panic_info| {
+        Game::clean_up()
+    }));
     Game { snake: Snake::new(), food: new_food(4, 9), view: 60 }
 }
 
@@ -204,9 +218,8 @@ fn main() {
         game.render();
         sleep(60);
     }
-  
-    terminal::disable_raw_mode().expect("Failed to disable raw mode.");
-    show_cursor();
+    Game::clean_up()
+   
 }
 
 fn hide_cursor() {
