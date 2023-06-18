@@ -8,7 +8,7 @@ pub struct SnakeBody {
     pub x: u16,
     pub y: u16,
 }
-
+#[derive(PartialEq)]
 pub enum Direction {
     Up,
     Down,

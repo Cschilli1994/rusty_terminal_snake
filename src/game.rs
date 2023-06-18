@@ -103,11 +103,11 @@ impl Game {
                     if key_event.code == KeyCode::Char('q') {
                         break;
                     }
-                    direction = match key_event.code {
-                        KeyCode::Left => Direction::Left,
-                        KeyCode::Right => Direction::Right,
-                        KeyCode::Up => Direction::Up,
-                        KeyCode::Down => Direction::Down,
+                    direction = match (key_event.code, &direction){
+                        (kc, dir) if kc == KeyCode::Left && *dir != Direction::Right => Direction::Left,
+                        (kc, dir) if kc == KeyCode::Right && *dir != Direction::Left => Direction::Right,
+                        (kc, dir) if kc == KeyCode::Up && *dir != Direction::Down => Direction::Up,
+                        (kc, dir) if kc == KeyCode::Down && *dir != Direction::Up => Direction::Down,
                         _ => direction
 
                     }
