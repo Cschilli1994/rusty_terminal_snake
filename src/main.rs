@@ -9,6 +9,5 @@ use crate::game::Game;
 
 
 fn main() {
-    let mut game = Game::new();
-    game.run();  
+    Game::new().run(); 
 }

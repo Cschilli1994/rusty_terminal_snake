@@ -19,20 +19,29 @@ use crate::snake::Snake;
 pub struct Game {
     pub snake: Snake,
     pub food: Food,
-    pub view: u16,
+    pub view: (u16, u16),
 }
 
 
 impl Game {
 
     pub fn new() -> Game {
+        let size = terminal::size().expect("Failed to get terminal size.");
+        Game { snake: Snake::new(), food: Food::new(4, 9), view: size }
+    }
+    fn setup() {
+        terminal::enable_raw_mode().expect("Failed to enable raw mode."); 
+        println!("Starting");
+        helper::hide_cursor();
+
+        // In case of unexpected ending  the clean_up fn to reenable expected terminal behavior
         panic::set_hook(Box::new(|_| {
             Game::clean_up()
         }));
-        Game { snake: Snake::new(), food: Food::new(4, 9), view: 60 }
     }
 
-    pub fn clean_up() {
+
+    fn clean_up() {
         terminal::disable_raw_mode().expect("Failed to disable raw mode.");
         helper::show_cursor();
         execute!(
@@ -50,14 +59,14 @@ impl Game {
             cursor::MoveTo(0, 0)
         ).expect("Failed to Move Cursor");
         
-        for i in 1..self.view {
+        for i in 1..self.view.0 {
             execute!(
                 stdout,
                 cursor::MoveTo(i, 0)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
         }
-        for i in 1..(self.view / 2) {
+        for i in 1..(self.view.1) {
             execute!(
                 stdout,
                 cursor::MoveTo(0, i)
@@ -66,14 +75,14 @@ impl Game {
 
             execute!(
                 stdout,
-                cursor::MoveTo(self.view, i)
+                cursor::MoveTo(self.view.0, i)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
         }
-        for i in 1..self.view {
+        for i in 1..self.view.0 {
             execute!(
                 stdout,
-                cursor::MoveTo(i, self.view / 2)
+                cursor::MoveTo(i, self.view.1)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
         }
@@ -83,10 +92,9 @@ impl Game {
     }
 
     pub fn run(&mut self) {
-        terminal::enable_raw_mode().expect("Failed to enable raw mode."); 
-        println!("Starting");
-        helper::hide_cursor();
+        Game::setup();
         let mut direction = Direction::Down;
+        let speed = 60;
         loop {
             
                 if poll(Duration::from_millis(0)).unwrap() {
@@ -117,7 +125,7 @@ impl Game {
                     terminal::Clear(terminal::ClearType::All)
                 ).expect("Failed cleaing terminal");
             self.render();
-            helper::sleep(60);
+            helper::sleep(speed);
         }
         Game::clean_up();
     }
