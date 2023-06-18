@@ -27,7 +27,7 @@ impl Game {
 
     pub fn new() -> Game {
         let size = terminal::size().expect("Failed to get terminal size.");
-        Game { snake: Snake::new(), food: Food::new(4, 9), view: size }
+        Game { snake: Snake::new(size.0 / 2, size.1 / 2), food: Food::new(4, 9), view: size }
     }
     fn setup() {
         terminal::enable_raw_mode().expect("Failed to enable raw mode."); 

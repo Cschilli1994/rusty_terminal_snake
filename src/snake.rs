@@ -60,20 +60,20 @@ impl Snake {
     }
 
 
-    pub fn new() -> Snake {
+    pub fn new(x: u16, y: u16) -> Snake {
         Snake { 
-            x: 1, 
-            y: 3, 
+            x, 
+            y, 
             length: 3, 
             direction: Direction::Down, 
             body: vec![
                 SnakeBody { 
-                    x: 1, 
-                    y: 2, 
+                    x, 
+                    y: y - 1, 
                 },
                 SnakeBody { 
-                    x: 1, 
-                    y: 1, 
+                    x, 
+                    y: y - 2, 
                 }
             ]
         }
