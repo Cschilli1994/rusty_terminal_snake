@@ -54,35 +54,37 @@ impl Game {
     
     fn render(&self) {
         let mut stdout = stdout();
+        
         execute!(
             stdout,
+            terminal::Clear(terminal::ClearType::All),
             cursor::MoveTo(0, 0)
         ).expect("Failed to Move Cursor");
         
         for i in 1..self.view.0 {
             execute!(
                 stdout,
-                cursor::MoveTo(i, 0)
+                cursor::MoveTo(i, 1)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
         }
-        for i in 1..(self.view.1) {
+        for i in 1..self.view.1  {
             execute!(
                 stdout,
-                cursor::MoveTo(0, i)
+                cursor::MoveTo(1, i)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
 
             execute!(
                 stdout,
-                cursor::MoveTo(self.view.0, i)
+                cursor::MoveTo(self.view.0 -1, i)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
         }
-        for i in 1..self.view.0 {
+        for i in 1..self.view.0  {
             execute!(
                 stdout,
-                cursor::MoveTo(i, self.view.1)
+                cursor::MoveTo(i, self.view.1 -1)
             ).expect("Failed to Move Cursor");
             queue!(stdout, Print("#")).expect("failed to queue!");
         }
@@ -109,24 +111,27 @@ impl Game {
                         (kc, dir) if kc == KeyCode::Up && *dir != Direction::Down => Direction::Up,
                         (kc, dir) if kc == KeyCode::Down && *dir != Direction::Up => Direction::Down,
                         _ => direction
-
                     }
                     }
                 }
                 match direction {
-                    Direction::Left => self.snake.move_to(self.snake.x - 1, self.snake.y),
-                    Direction::Right => self.snake.move_to(self.snake.x + 1, self.snake.y),
-                    Direction::Up => self.snake.move_to(self.snake.x, self.snake.y - 1),
-                    Direction::Down => self.snake.move_to(self.snake.x, self.snake.y + 1),
+                    Direction::Left => self.try_move_snake(self.snake.x - 1, self.snake.y),
+                    Direction::Right => self.try_move_snake(self.snake.x + 1, self.snake.y),
+                    Direction::Up => self.try_move_snake(self.snake.x, self.snake.y - 1),
+                    Direction::Down => self.try_move_snake(self.snake.x, self.snake.y + 1),
                 }
 
-                execute!(
-                    stdout(),
-                    terminal::Clear(terminal::ClearType::All)
-                ).expect("Failed cleaing terminal");
+      
             self.render();
             helper::sleep(speed);
         }
         Game::clean_up();
+    }
+
+    fn try_move_snake(&mut self, x: u16, y: u16) {
+        if x <= 1 || x >= self.view.0 -1 || y <= 1 || y >= self.view.1 - 1 {
+            panic!("Out of bounds");
+        }
+        self.snake.move_to(x,y);
     }
 }
