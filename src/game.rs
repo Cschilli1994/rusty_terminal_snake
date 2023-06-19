@@ -20,7 +20,7 @@ pub struct Game {
     snake: Snake,
     food: Food,
     view: (u16, u16),
-    score: u16
+    score: u64
 }
 
 
@@ -105,9 +105,9 @@ impl Game {
     pub fn run(&mut self) {
         Game::setup();
         let mut direction = Direction::Down;
-        let speed = 60;
+        
         loop {
-            
+                let speed: u64 = 100 - (self.score * 5);
                 if poll(Duration::from_millis(0)).unwrap() {
                 if let Event::Key(key_event) = read().expect("Failed to read input!") {
 
@@ -156,7 +156,8 @@ impl Game {
         if (self.food.x == x && self.food.y == y) {
             self.score += 1;
             self.new_food();
-            self.snake.grow(1);
+            self.snake.grow(x, y);
+            return true;
         }
 
         self.snake.move_to(x,y);

@@ -36,8 +36,12 @@ impl Snake {
         self.y = y;
     }
 
-    pub fn grow(&mut self, size: i16) -> i16 {
-        self.length += size;
+    pub fn grow(&mut self, x: u16, y: u16) -> i16 {
+        self.length += 1;
+    
+        self.body.insert(0, SnakeBody { x: self.x, y: self.y });     
+        self.x = x;
+        self.y = y;
         self.length
     }
    
