@@ -2,7 +2,7 @@ use std::io::stdout;
 
 use crossterm::{execute, cursor};
 
-
+use rand::{thread_rng, Rng};
 
 
 pub struct Food {
@@ -11,7 +11,10 @@ pub struct Food {
 }
 
 impl Food {
-    pub fn new(x: u16, y:u16) -> Food {
+    pub fn new(max_x: u16, max_y:u16) -> Food {
+        let mut rng = thread_rng();
+        let x = rng.gen_range(2..max_x);
+        let y = rng.gen_range(2..max_y);
         Food { x, y }
     }
 
@@ -21,6 +24,6 @@ impl Food {
             stdout(),
             cursor::MoveTo(self.x, self.y)
         ).expect("Failed to move cursor!");
-        println!("🍎");
+        println!("x");
     }
 }
