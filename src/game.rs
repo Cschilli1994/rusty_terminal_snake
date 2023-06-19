@@ -17,9 +17,10 @@ use crate::snake::Snake;
 
 
 pub struct Game {
-    pub snake: Snake,
-    pub food: Food,
-    pub view: (u16, u16),
+    snake: Snake,
+    food: Food,
+    view: (u16, u16),
+    score: u16
 }
 
 
@@ -27,7 +28,7 @@ impl Game {
 
     pub fn new() -> Game {
         let size = terminal::size().expect("Failed to get terminal size.");
-        Game { snake: Snake::new(size.0 / 2, size.1 / 2), food: Food::new(4, 9), view: size }
+        Game { snake: Snake::new(size.0 / 2, size.1 / 2), food: Food::new(size.0 - 1, size.1 - 1), view: size, score: 0 }
     }
     fn setup() {
         terminal::enable_raw_mode().expect("Failed to enable raw mode."); 
@@ -36,12 +37,17 @@ impl Game {
 
         // In case of unexpected ending  the clean_up fn to reenable expected terminal behavior
         panic::set_hook(Box::new(|_| {
-            Game::clean_up()
+            Game::clean_up("Something went wrong!")
         }));
     }
+    fn new_food(&mut self) {
+        self.food = Food::new(
+            self.view.0 -1,
+            self.view.1 - 1
+        )
+    }
 
-
-    fn clean_up() {
+    fn clean_up(msg: &str) {
         terminal::disable_raw_mode().expect("Failed to disable raw mode.");
         helper::show_cursor();
         execute!(
@@ -49,7 +55,7 @@ impl Game {
             cursor::MoveTo(1, 0),
             terminal::Clear(terminal::ClearType::All)
         ).expect("Failed cleaing terminal");
-        println!("Game Over!");
+        println!("{}",msg);
     }
     
     fn render(&self) {
@@ -58,8 +64,10 @@ impl Game {
         execute!(
             stdout,
             terminal::Clear(terminal::ClearType::All),
-            cursor::MoveTo(0, 0)
+            cursor::MoveTo(self.view.0 / 2, 0 ),
         ).expect("Failed to Move Cursor");
+       
+        queue!(stdout, Print(format!( "Score : {}", self.score))).expect("failed to queue!");
         
         for i in 1..self.view.0 {
             execute!(
@@ -91,6 +99,7 @@ impl Game {
         stdout.flush().expect("Failed to Flush");
         self.food.render();
         self.snake.render();
+     
     }
 
     pub fn run(&mut self) {
@@ -114,24 +123,46 @@ impl Game {
                     }
                     }
                 }
-                match direction {
+                let can_continue = match direction {
                     Direction::Left => self.try_move_snake(self.snake.x - 1, self.snake.y),
                     Direction::Right => self.try_move_snake(self.snake.x + 1, self.snake.y),
                     Direction::Up => self.try_move_snake(self.snake.x, self.snake.y - 1),
                     Direction::Down => self.try_move_snake(self.snake.x, self.snake.y + 1),
+                };
+                if can_continue == false {
+                    break;
                 }
 
       
             self.render();
             helper::sleep(speed);
         }
-        Game::clean_up();
+
+        Game::clean_up("Game Over!");
+        println!("Score: {}", self.score);
     }
 
-    fn try_move_snake(&mut self, x: u16, y: u16) {
+    fn try_move_snake(&mut self, x: u16, y: u16) -> bool {
         if x <= 1 || x >= self.view.0 -1 || y <= 1 || y >= self.view.1 - 1 {
-            panic!("Out of bounds");
+            return false;
+        } 
+        
+        for snake_body in &self.snake.body {
+            if snake_body.x == x && snake_body.y == y {
+                return false;
+            }
+        };
+        
+        if (self.food.x == x && self.food.y == y) {
+            self.score += 1;
+            self.new_food();
+            self.snake.grow(1);
         }
+
         self.snake.move_to(x,y);
+        return true
     }
+
+  
 }
+
